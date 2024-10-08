@@ -11,11 +11,19 @@ var gGamerPos;
 
 let collectedBallsCount = 0;
 
+let intervalId;
+let isGameOver = false; // Flag to indicate if the game is over
+
+
 
 function initGame() {
+	isGameOver = false; // Reset the game over flag when restarting
+
 	gGamerPos = { i: 2, j: 9 };
 	gBoard = buildBoard();
 	renderBoard(gBoard);
+
+	intervalId = setInterval(displayRandomBall, 5000); // Start the interval to add balls
 }
 
 
@@ -92,27 +100,27 @@ function renderBoard(board) {
 
 function getRandomInt(min, max) {
 
-    return Math.floor(Math.random() * (max - min + 1)) + min;
+	return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 // Display a ball in a random location every 2 seconds using setInterval
 function displayRandomBall() {
-    var i = getRandomInt(1, gBoard.length - 2);
-    var j = getRandomInt(1, gBoard[0].length - 2);
+    if (isGameOver) return; // Stop adding balls if the game is over
 
-    var targetCell = gBoard[i][j];
-    if (targetCell.gameElement === null) {
-        targetCell.gameElement = BALL;
-        renderCell({ i: i, j: j }, BALL_IMG);
-    }
+	var i = getRandomInt(1, gBoard.length - 2);
+	var j = getRandomInt(1, gBoard[0].length - 2);
+
+	var targetCell = gBoard[i][j];
+	if (targetCell.gameElement === null) {
+		targetCell.gameElement = BALL;
+		renderCell({ i: i, j: j }, BALL_IMG);
+	}
 }
-
-// הפעלת הפונקציה כל 2 שניות
-setInterval(displayRandomBall, 2000);
 
 
 // Move the player to a specific location
 function moveTo(i, j) {
+    if (isGameOver) return; // Stop adding balls if the game is over
 
 	var targetCell = gBoard[i][j];
 	if (targetCell.type === WALL) return;
@@ -125,9 +133,13 @@ function moveTo(i, j) {
 	if ((iAbsDiff === 1 && jAbsDiff === 0) || (jAbsDiff === 1 && iAbsDiff === 0)) {
 
 		if (targetCell.gameElement === BALL) {
+			// Remove the ball from the board after collecting
+			targetCell.gameElement = null;
+			renderCell({ i: i, j: j }, '');
+
 			console.log('Collecting!');
-			collectedBallsCount++; 
-            updateCollectedBallsDisplay();
+			collectedBallsCount++;
+			updateCollectedBallsDisplay();
 		}
 
 		// MOVING from current position
@@ -144,13 +156,39 @@ function moveTo(i, j) {
 		// DOM:
 		renderCell(gGamerPos, GAMER_IMG);
 
+		// Check if all balls are collected after moving
+		if (checkAllBallsCollected()) {
+            setTimeout(function () {
+                alert('WIN!!! You collected all the balls!');
+                clearInterval(intervalId); 
+				isGameOver = true; 
+            }, 100); // Slight delay to allow last move to complete
+        }
+
 	} // else console.log('TOO FAR', iAbsDiff, jAbsDiff);
 
 }
 
 function updateCollectedBallsDisplay() {
-    var elCollectedBalls = document.querySelector('.collected-balls-count');
-    elCollectedBalls.innerText = 'Balls Collected: ' + collectedBallsCount;
+	var elCollectedBalls = document.querySelector('.collected-balls-count');
+	elCollectedBalls.innerText = 'Balls Collected: ' + collectedBallsCount;
+}
+
+// Check if all balls are collected
+function checkAllBallsCollected() {
+	for (var i = 0; i < gBoard.length; i++) {
+		for (var j = 0; j < gBoard[0].length; j++) {
+			if (gBoard[i][j].gameElement === BALL) {
+				return false; // Found a ball that is not collected
+			}
+		}
+	}
+	return true; // All balls are collected
+}
+
+// Reset the game
+function resetGame() {
+	initGame();
 }
 
 // Convert a location object {i, j} to a selector and render a value in that element
