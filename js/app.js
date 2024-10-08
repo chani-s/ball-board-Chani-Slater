@@ -86,6 +86,27 @@ function renderBoard(board) {
 	elBoard.innerHTML = strHTML;
 }
 
+function getRandomInt(min, max) {
+
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+// Display a ball in a random location every 2 seconds using setInterval
+function displayRandomBall() {
+    var i = getRandomInt(1, gBoard.length - 2);
+    var j = getRandomInt(1, gBoard[0].length - 2);
+
+    var targetCell = gBoard[i][j];
+    if (targetCell.gameElement === null) {
+        targetCell.gameElement = BALL;
+        renderCell({ i: i, j: j }, BALL_IMG);
+    }
+}
+
+// הפעלת הפונקציה כל 2 שניות
+setInterval(displayRandomBall, 2000);
+
+
 // Move the player to a specific location
 function moveTo(i, j) {
 
