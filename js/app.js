@@ -8,6 +8,10 @@ var BALL_IMG = '<img src="img/ball.png" />';
 
 var gBoard;
 var gGamerPos;
+
+let collectedBallsCount = 0;
+
+
 function initGame() {
 	gGamerPos = { i: 2, j: 9 };
 	gBoard = buildBoard();
@@ -122,6 +126,8 @@ function moveTo(i, j) {
 
 		if (targetCell.gameElement === BALL) {
 			console.log('Collecting!');
+			collectedBallsCount++; 
+            updateCollectedBallsDisplay();
 		}
 
 		// MOVING from current position
@@ -140,6 +146,11 @@ function moveTo(i, j) {
 
 	} // else console.log('TOO FAR', iAbsDiff, jAbsDiff);
 
+}
+
+function updateCollectedBallsDisplay() {
+    var elCollectedBalls = document.querySelector('.collected-balls-count');
+    elCollectedBalls.innerText = 'Balls Collected: ' + collectedBallsCount;
 }
 
 // Convert a location object {i, j} to a selector and render a value in that element
